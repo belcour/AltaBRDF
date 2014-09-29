@@ -1,10 +1,7 @@
 AltaBRDF
 ========
 
-[Mitsuba][] plugin to load [ALTA][] BRDFs and perform rendering of fitted BRDFs.
-
-    [Mitsuba](http://http://mitsuba-renderer.org/)
-    [ALTA](http://alta.gforge.inria.fr/)
+[Mitsuba](http://http://mitsuba-renderer.org/) plugin to load [ALTA](http://alta.gforge.inria.fr/) BRDFs and perform rendering of fitted BRDFs.
 
 
 ## Usage
