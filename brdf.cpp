@@ -1,4 +1,5 @@
 // MTS headers
+#include <mitsuba/mitsuba.h>
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/hw/basicshader.h>
 #include <mitsuba/core/warp.h>
@@ -11,6 +12,7 @@
 
 // STL
 #include <iostream>
+#include <cmath>
 
 MTS_NAMESPACE_BEGIN
 
