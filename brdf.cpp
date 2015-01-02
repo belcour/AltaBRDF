@@ -20,11 +20,17 @@ class AltaBRDF : public BSDF {
 public:
 	/* Constructors & destructors */
 
-	AltaBRDF(const Properties& props) : BSDF(props) {
-		_func = plugins_manager::get_function(props.getString("filename"));
+	AltaBRDF(const Properties& props) : BSDF(props), _data(NULL) {
+		if(props.hasProperty("data-plugin")) {
+			_data = plugins_manager::get_data(props.getString("data-plugin"));
+			_data->load(props.getString("filename"));
+			_func = NULL;
+		} else {
+			_func = plugins_manager::get_function(props.getString("filename"));
+		}
 	}
 
-	AltaBRDF(Stream *stream, InstanceManager *manager) : BSDF(stream, manager) {
+	AltaBRDF(Stream *stream, InstanceManager *manager) : BSDF(stream, manager), _data(NULL) {
 		configure();
 	}
 
@@ -76,18 +82,34 @@ public:
 		cart[4] = bRec.wo[1];
 		cart[5] = bRec.wo[2];
 
-		vec x(_func->dimX());
-		params::convert(&cart[0], params::CARTESIAN, _func->input_parametrization(), &x[0]);
+		/* Return the value of the BRDF from the function object */
+		if(_func != NULL) {
+			vec x(_func->dimX());
+			params::convert(&cart[0], params::CARTESIAN, _func->input_parametrization(), &x[0]);
+			vec y = _func->value(x);
+			Spectrum res;
+			if(_func->dimY() == 3) {
+				res.fromSRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
+			} else {
+				res = Spectrum(std::max(y[0], 0.0));
+			}
+			return res;
 
-		vec y = _func->value(x);
-
-		Spectrum res;
-		if(_func->dimY() == 3) {
-			res.fromSRGB(y[0], y[1], y[2]);
+		/* Treat the case of a BRDF from interpolated data */
 		} else {
-			res = Spectrum(y[0]);
+			vec x(_data->dimX());
+			params::convert(&cart[0], params::CARTESIAN, _data->input_parametrization(), &x[0]);
+			vec y = _data->value(x);
+
+			Spectrum res;
+			if(_data->dimY() == 3) {
+				res.fromSRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
+			} else {
+				res = Spectrum(std::max(y[0], 0.0));
+			}
+			return res;
 		}
-		return res;
+
 	}
 
 	virtual Float pdf(const BSDFSamplingRecord &bRec, EMeasure measure) const {
@@ -103,6 +125,7 @@ public:
 
 private:
 	function* _func;
+	ptr<data> _data;
 };
 
 MTS_IMPLEMENT_CLASS_S(AltaBRDF, false, BSDF)
