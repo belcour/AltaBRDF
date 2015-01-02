@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene version="0.5.0">
+
+	<integrator type="direct" />
+
+	<!-- Instantiate a perspective camera with 45 degrees field of view -->
+	<sensor type="perspective">
+		<!-- Rotate the camera around the Y axis by 180 degrees -->
+		<transform name="toWorld">
+			<lookAt origin="0, 0, -3" target="0, 0, 0" up="0, 1, 0"/>
+		</transform>
+
+		<float name="fov" value="45" />
+	
+		<!-- Render with 32 samples per pixel using aindependent sampling strategy -->
+		<sampler type="independent">
+			<integer name="sampleCount" value="64"/>
+		</sampler>
+	
+		<film type="hdrfilm">
+			<integer name="width" value="512"/>
+			<integer name="height" value="512"/>
+		</film>
+	</sensor>
+
+	<shape type="sphere">
+		<float name="radius" value="1"/>
+
+		<bsdf type="alta_brdf">
+			<string name="filename"    value="blue-metallic-paint.func" />
+		</bsdf>
+		<!-- 
+		<bsdf type="alta_brdf">
+			<string name="filename"    value="blue-metallic-paint.binary" />
+			<string name="data-plugin" value="data_merl" />
+		</bsdf>
+		-->
+	</shape>
+	<emitter type="sunsky">
+		<float name="hour" value="10" />
+	</emitter>
+
+</scene>
+
