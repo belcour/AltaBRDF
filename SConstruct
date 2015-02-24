@@ -35,7 +35,7 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 	libs = [f for f in os.listdir(libpath) if f.endswith('.so')]
 	env.AppendUnique(LIBS = [libs, 'core'])
 	env.AppendUnique(RPATH = libpath)
-	#env.AppendUnique(LDFLAGS = '-headerpad_max_install_names')
+	#env.AppendUnique(LINKFLAGS = '-headerpad_max_install_names')
 
 	env['SHLIBPREFIX']=''
 	build = env.SharedLibrary('alta_brdf', ['brdf.cpp'])
@@ -44,12 +44,13 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 	env.Alias('install', install_path)
 
 elif sys.platform == 'darwin':
-	env.AppendUnique(CPPPATH = os.path.join(mitsubaPath, 'dependencies/include'))
-	env.AppendUnique(CPPPATH = os.path.join(mitsubaPath, 'Mitsuba.app/Headers/include'))
+	env.AppendUnique(CCFLAGS = ['-arch', 'x86_64', '-mmacosx-version-min=10.9', '-stdlib=libstdc++'])
+	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'dependencies/include')])
+	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'Mitsuba.app/Headers/include')])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])
 
 	libpath = os.path.join(mitsubaPath, 'Mitsuba.app/Contents/Frameworks/')
-	env.AppendUnique(LIBPATH = libpath)
+	env.AppendUnique(LIBPATH = [libpath])
 	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'sources/build')])
 	libs = [f for f in os.listdir(libpath) if f.endswith('.dylib')]
 	libs.remove('libboost_python26.dylib')
@@ -57,12 +58,12 @@ elif sys.platform == 'darwin':
 	libs.remove('libboost_python34.dylib')
 	env.AppendUnique(LIBS = [libs, 'core'])
 	env.AppendUnique(RPATH = libpath)
-	env.AppendUnique(LDFLAGS = '-headerpad_max_install_names')
+	env.AppendUnique(LINKFLAGS = ['-arch', 'x86_64', '-mmacosx-version-min=10.9', '-headerpad_max_install_names', '-stdlib=libstdc++'])
 
 	build = env.SharedLibrary('alta_brdf', ['brdf.cpp'])
 
-	cmd   = 'install_name_tool -add_rpath ' + libpath + ' libMitsuba-Darwin-x86_64.dylib'
-	patch = env.Command(target = "patchbuild", source = "libMitsuba-Darwin-x86_64.dylib", action = cmd)
+	#cmd   = 'install_name_tool -add_rpath ' + libpath + ' libMitsuba-Darwin-x86_64.dylib'
+	#patch = env.Command(target = "patchbuild", source = "libMitsuba-Darwin-x86_64.dylib", action = cmd)
 
 	Depends(patch, build)
 	install_path = os.path.join(mitsubaPath, 'Mitsuba.app/plugins')
