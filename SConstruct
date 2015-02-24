@@ -26,6 +26,9 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'include')])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])
 
+	if os.path.exists('/usr/include/eigen3'):
+		env.AppendUnique(CPPPATH = ['/usr/include/eigen3'])
+
 	libpath = os.path.join(mitsubaPath, 'dist')
 	env.AppendUnique(LIBPATH = [libpath])
 	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'sources/build')])
@@ -36,6 +39,9 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 
 	env['SHLIBPREFIX']=''
 	build = env.SharedLibrary('alta_brdf', ['brdf.cpp'])
+	install_path = os.path.join(mitsubaPath, 'dist/plugins')
+	env.Install(install_path, build)
+	env.Alias('install', install_path)
 
 elif sys.platform == 'darwin':
 	env.AppendUnique(CPPPATH = os.path.join(mitsubaPath, 'dependencies/include'))
@@ -59,6 +65,9 @@ elif sys.platform == 'darwin':
 	patch = env.Command(target = "patchbuild", source = "libMitsuba-Darwin-x86_64.dylib", action = cmd)
 
 	Depends(patch, build)
+	install_path = os.path.join(mitsubaPath, 'Mitsuba.app/plugins')
+	env.Install(install_path, build)
+	env.Alias('install', install_path)
 
 else:
 

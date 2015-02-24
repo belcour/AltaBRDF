@@ -40,46 +40,28 @@ public:
 
 	virtual void configure() {	
 		BSDF::configure();
+		
+		m_components.clear();
+		m_components.push_back(EDiffuseReflection | EFrontSide);
+	}
+
+	Spectrum getDiffuseReflectance(const Intersection &its) const {
+		return Spectrum(0.0f);
 	}
 	
-	virtual Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const {
-		if (Frame::cosTheta(bRec.wi) <= 0)
+	Spectrum getReflectance(const Vector& wi, const Vector& wo) const {
+		if (Frame::cosTheta(wi) <= 0 || Frame::cosTheta(wo) <= 0) {
 			return Spectrum(0.0f);
-
-		bRec.wo = warp::squareToCosineHemisphere(sample);
-		bRec.eta = 1.0f;
-		bRec.sampledComponent = 0;
-		bRec.sampledType = EDiffuseReflection;
-		return eval(bRec);
-	}
-
-	virtual Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf, const Point2 &sample) const {
-		if (Frame::cosTheta(bRec.wi) <= 0)
-			return Spectrum(0.0f);
-
-		bRec.wo = warp::squareToCosineHemisphere(sample);
-		bRec.eta = 1.0f;
-		bRec.sampledComponent = 0;
-		bRec.sampledType = EDiffuseReflection;
-		pdf = warp::squareToCosineHemispherePdf(bRec.wo);
-		return eval(bRec);
-
-	}
-
-	virtual Spectrum eval(const BSDFSamplingRecord &bRec, EMeasure measure = ESolidAngle) const {
-		if (measure != ESolidAngle
-			|| Frame::cosTheta(bRec.wi) <= 0
-			|| Frame::cosTheta(bRec.wo) <= 0)
-			return Spectrum(0.0f);
+		}
 
 		double cart[6];
-		cart[0] = bRec.wi[0];
-		cart[1] = bRec.wi[1];
-		cart[2] = bRec.wi[2];
-		cart[3] = bRec.wo[0];
-		cart[4] = bRec.wo[1];
-		cart[5] = bRec.wo[2];
-
+		cart[0] = wi[0];
+		cart[1] = wi[1];
+		cart[2] = wi[2];
+		cart[3] = wo[0];
+		cart[4] = wo[1];
+		cart[5] = wo[2];
+			
 		/* Return the value of the BRDF from the function object */
 		if(_func != NULL) {
 			vec x(_func->dimX());
@@ -87,7 +69,7 @@ public:
 			vec y = _func->value(x);
 			Spectrum res;
 			if(_func->dimY() == 3) {
-				res.fromSRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
+				res.fromLinearRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
 			} else {
 				res = Spectrum(std::max(y[0], 0.0));
 			}
@@ -101,13 +83,38 @@ public:
 
 			Spectrum res;
 			if(_data->dimY() == 3) {
-				res.fromSRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
+				res.fromLinearRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
 			} else {
 				res = Spectrum(std::max(y[0], 0.0));
 			}
 			return res;
 		}
+	}
 
+	virtual Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const {
+		Float pdf;
+		return AltaBRDF::sample(bRec, pdf, sample);
+	}
+
+	virtual Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf, const Point2 &sample) const {
+		if (Frame::cosTheta(bRec.wi) <= 0)
+			return Spectrum(0.0f);
+
+		bRec.wo = warp::squareToCosineHemisphere(sample);
+		bRec.eta = 1.0f;
+		bRec.sampledComponent = 0;
+		bRec.sampledType = EDiffuseReflection;
+		pdf = warp::squareToCosineHemispherePdf(bRec.wo);
+		return getReflectance(bRec.wi, bRec.wo) / pdf;
+
+	}
+
+	virtual Spectrum eval(const BSDFSamplingRecord &bRec, EMeasure measure = ESolidAngle) const {
+		if (measure != ESolidAngle) {
+			return Spectrum(0.0f);
+		}
+
+		return INV_PI * Frame::cosTheta(bRec.wo) * getReflectance(bRec.wi, bRec.wo);
 	}
 
 	virtual Float pdf(const BSDFSamplingRecord &bRec, EMeasure measure) const {
@@ -117,6 +124,10 @@ public:
 			return 0.0f;
 
 		return warp::squareToCosineHemispherePdf(bRec.wo);
+	}
+
+	Float getRoughness(const Intersection &its, int component) const {
+		return std::numeric_limits<Float>::infinity();
 	}
 
 	MTS_DECLARE_CLASS()
