@@ -24,8 +24,6 @@ public:
 		if(props.hasProperty("data-plugin")) {
 			_data = plugins_manager::get_data(props.getString("data-plugin"));
 			_data->load(props.getString("filename"));
-
-			std::cout << "<<INFO>> Opening file \"" << props.getString("filename") << "\", with parametrization " << params::get_name(_data->input_parametrization()) << std::endl;
 		} else {
 			_func = plugins_manager::get_function(props.getString("filename"));
 		}
@@ -110,7 +108,7 @@ public:
 		bRec.sampledComponent = 0;
 		bRec.sampledType = EDiffuseReflection;
 		pdf = warp::squareToCosineHemispherePdf(bRec.wo);
-		return getReflectance(bRec.wi, bRec.wo) / pdf;
+		return getReflectance(bRec.wi, bRec.wo);
 
 	}
 
