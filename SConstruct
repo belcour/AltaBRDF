@@ -23,6 +23,7 @@ env.AppendUnique(CPPDEFINES = 'SINGLE_PRECISION')
 env.AppendUnique(CPPDEFINES = 'SPECTRUM_SAMPLES=3')
 
 if sys.platform == 'posix' or sys.platform == 'linux2':
+	env.AppendUnique(CCFLAGS = ['-g'])
 	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'include')])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])
 
@@ -44,7 +45,7 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 	env.Alias('install', install_path)
 
 elif sys.platform == 'darwin':
-	env.AppendUnique(CCFLAGS = ['-arch', 'x86_64', '-mmacosx-version-min=10.9', '-stdlib=libstdc++'])
+	env.AppendUnique(CCFLAGS = ['-arch', 'x86_64', '-mmacosx-version-min=10.9', '-stdlib=libstdc++', '-g'])
 	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'dependencies/include')])
 	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'Mitsuba.app/Headers/include')])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])

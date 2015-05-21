@@ -3,6 +3,8 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/hw/basicshader.h>
 #include <mitsuba/core/warp.h>
+#include <mitsuba/core/vmf.h>
+#include <mitsuba/core/transform.h>
 
 // ALTA headers
 #include <core/common.h>
@@ -16,6 +18,8 @@
 
 MTS_NAMESPACE_BEGIN
 
+//#define USE_VMF
+
 class AltaBRDF : public BSDF {
 public:
 	/* Constructors & destructors */
@@ -27,6 +31,9 @@ public:
 		} else {
 			_func = plugins_manager::get_function(props.getString("filename"));
 		}
+#ifdef USE_VMF
+		_distrib.setKappa(100);
+#endif
 	}
 
 	AltaBRDF(Stream *stream, InstanceManager *manager) : BSDF(stream, manager), _data(NULL), _func(NULL) {
@@ -42,6 +49,9 @@ public:
 		
 		m_components.clear();
 		m_components.push_back(EDiffuseReflection | EFrontSide);
+#ifdef USE_VMF
+		m_components.push_back(EGlossyReflection| EFrontSide);
+#endif
 		m_usesRayDifferentials = false;
 		
 		BSDF::configure();
@@ -103,11 +113,34 @@ public:
 		if (Frame::cosTheta(bRec.wi) <= 0)
 			return Spectrum(0.0f);
 
+#ifdef USE_VMF
+		// Copy element to modify it
+		Point2 vsample = sample;
+
+		if(vsample.x < 0.5) {
+			vsample.x *= 2;
+			bRec.wo = warp::squareToCosineHemisphere(vsample);
+			bRec.sampledComponent = 0;
+			bRec.sampledType = EDiffuseReflection;
+		} else {
+			vsample.x = 2.0*(sample.x - 0.5);
+			Vector R = reflect(bRec.wi);
+
+			// Sample from a vmf lobe centered around (0, 0, 1)
+			Vector localDir = _distrib.sample(vsample);
+
+			// Rotate into the correct coordinate system
+			bRec.wo = Frame(R).toWorld(localDir);
+			bRec.sampledComponent = 1;
+			bRec.sampledType = EGlossyReflection;
+		}
+#else
 		bRec.wo = warp::squareToCosineHemisphere(sample);
-		bRec.eta = 1.0f;
 		bRec.sampledComponent = 0;
 		bRec.sampledType = EDiffuseReflection;
-		pdf = warp::squareToCosineHemispherePdf(bRec.wo);
+#endif
+		bRec.eta = 1.0f;
+		pdf = this->pdf(bRec, ESolidAngle);
 		return getReflectance(bRec.wi, bRec.wo);
 
 	}
@@ -126,11 +159,22 @@ public:
 			|| Frame::cosTheta(bRec.wo) <= 0)
 			return 0.0f;
 
+#ifdef USE_VMF
+		Vector R     = reflect(bRec.wi);
+		Float vmfPdf = _distrib.eval(dot(R, bRec.wo));
+
+		return 0.5*vmfPdf + 0.5*warp::squareToCosineHemispherePdf(bRec.wo);
+#else
 		return warp::squareToCosineHemispherePdf(bRec.wo);
+#endif
 	}
 
 	Float getRoughness(const Intersection &its, int component) const {
 		return std::numeric_limits<Float>::infinity();
+	}
+	
+	inline Vector reflect(const Vector &wi) const {
+		return Vector(-wi.x, -wi.y, wi.z);
 	}
 
 	MTS_DECLARE_CLASS()
@@ -138,6 +182,9 @@ public:
 private:
 	ptr<function> _func;
 	ptr<data> _data;
+#ifdef USE_VMF
+	VonMisesFisherDistr _distrib;
+#endif
 };
 
 MTS_IMPLEMENT_CLASS_S(AltaBRDF, false, BSDF)
