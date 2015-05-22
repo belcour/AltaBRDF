@@ -29,7 +29,7 @@ public:
 			_data = plugins_manager::get_data(props.getString("data-plugin"));
 			_data->load(props.getString("filename"));
 		} else {
-			_func = plugins_manager::get_function(props.getString("filename"));
+			_func = plugins_manager::load_function(props.getString("filename"));
 		}
 #ifdef USE_VMF
 		_distrib.setKappa(100);
