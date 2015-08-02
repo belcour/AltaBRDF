@@ -45,10 +45,10 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 	env.Alias('install', install_path)
 
 elif sys.platform == 'darwin':
-	env.AppendUnique(CCFLAGS = ['-arch', 'x86_64', '-mmacosx-version-min=10.9', '-stdlib=libstdc++', '-g'])
-	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'dependencies/include')])
-	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'Mitsuba.app/Headers/include')])
+	env.AppendUnique(CCFLAGS = ['-g', '-arch', 'x86_64', '-std=c++11', '-mmacosx-version-min=10.9'])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])
+	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'Mitsuba.app/Headers/include')])
+	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'dependencies/include')])
 
 	libpath = os.path.join(mitsubaPath, 'Mitsuba.app/Contents/Frameworks/')
 	env.AppendUnique(LIBPATH = [libpath])
@@ -66,7 +66,7 @@ elif sys.platform == 'darwin':
 	#cmd   = 'install_name_tool -add_rpath ' + libpath + ' libMitsuba-Darwin-x86_64.dylib'
 	#patch = env.Command(target = "patchbuild", source = "libMitsuba-Darwin-x86_64.dylib", action = cmd)
 
-	Depends(patch, build)
+	#Depends(patch, build)
 	install_path = os.path.join(mitsubaPath, 'Mitsuba.app/plugins')
 	env.Install(install_path, build)
 	env.Alias('install', install_path)

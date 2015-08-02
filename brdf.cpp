@@ -1,3 +1,14 @@
+// STL
+#include <iostream>
+#include <cmath>
+#include <limits>
+
+// ALTA headers
+#include <core/common.h>
+#include <core/ptr.h>
+#include <core/plugins_manager.h>
+#include <core/function.h>
+
 // MTS headers
 #include <mitsuba/mitsuba.h>
 #include <mitsuba/render/bsdf.h>
@@ -6,15 +17,6 @@
 #include <mitsuba/core/vmf.h>
 #include <mitsuba/core/transform.h>
 
-// ALTA headers
-#include <core/common.h>
-#include <core/ptr.h>
-#include <core/plugins_manager.h>
-#include <core/function.h>
-
-// STL
-#include <iostream>
-#include <cmath>
 
 MTS_NAMESPACE_BEGIN
 
