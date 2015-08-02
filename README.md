@@ -3,6 +3,13 @@ AltaBRDF
 
 [Mitsuba](http://http://mitsuba-renderer.org/) plugin to load [ALTA](http://alta.gforge.inria.fr/) BRDFs and perform rendering of fitted BRDFs.
 
+## Build
+
+To build this package, you can SCons or CMake. For example with scons:
+
+    $ scons install
+
+The 'install' flag, will automatically move the resulting library to the Mitsuba plugin directory so that it is readily usable. Make sure that both Mitsuba and ALTA are available in the environment variables (you can do this by sourcing the setpath.sh or both softwares).
 
 ## Usage
 
