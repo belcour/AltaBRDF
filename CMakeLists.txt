@@ -22,6 +22,9 @@ find_library(MTS_LIBS NAMES mitsuba-core mitsuba-hw mitsuba-render
 add_library (alta_brdf SHARED brdf.cpp)
 set_target_properties(alta_brdf PROPERTIES PREFIX "")
 
+# Install directory (system dep)
+install(TARGETS alta_brdf DESTINATION "$ENV{MITSUBA_DIR}/dist/plugins")
+
 # Add C++11 features
 target_compile_features(alta_brdf PRIVATE cxx_auto_type)
 target_link_libraries(alta_brdf ${ALTA_LIB} ${MTS_LIBS})
