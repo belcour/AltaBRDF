@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.1)
 project (AltaBRDF)
 
 # Include directories, put ALTA first and MTS second to
@@ -20,7 +20,8 @@ find_library(MTS_LIBS NAMES mitsuba-core mitsuba-hw mitsuba-render
 
 
 add_library (alta_brdf SHARED brdf.cpp)
+set_target_properties(alta_brdf PROPERTIES PREFIX "")
 
 # Add C++11 features
-target_compile_features(alta_brdf PRIVATE cxx_range_for)
+target_compile_features(alta_brdf PRIVATE cxx_auto_type)
 target_link_libraries(alta_brdf ${ALTA_LIB} ${MTS_LIBS})
