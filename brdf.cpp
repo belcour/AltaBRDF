@@ -22,16 +22,18 @@ MTS_NAMESPACE_BEGIN
 
 //#define USE_VMF
 
+using namespace alta;
+
 class AltaBRDF : public BSDF {
 public:
 	/* Constructors & destructors */
 
 	AltaBRDF(const Properties& props) : BSDF(props), _data(NULL), _func(NULL) {
 		if(props.hasProperty("data-plugin")) {
-			_data = plugins_manager::get_data(props.getString("data-plugin"));
+			_data = ptr<data>(plugins_manager::get_data(props.getString("data-plugin")));
 			_data->load(props.getString("filename"));
 		} else {
-			_func = plugins_manager::load_function(props.getString("filename"));
+			_func = ptr<function>(plugins_manager::load_function(props.getString("filename")));
 		}
 #ifdef USE_VMF
 		_distrib.setKappa(100);
@@ -47,22 +49,22 @@ public:
 
 	/* Mitsuba interface */
 
-	virtual void configure() {	
-		
+	virtual void configure() {
+
 		m_components.clear();
 		m_components.push_back(EDiffuseReflection | EFrontSide);
 #ifdef USE_VMF
 		m_components.push_back(EGlossyReflection| EFrontSide);
 #endif
 		m_usesRayDifferentials = false;
-		
+
 		BSDF::configure();
 	}
 
 	Spectrum getDiffuseReflectance(const Intersection &its) const {
 		return Spectrum(0.0f);
 	}
-	
+
 	Spectrum getReflectance(const Vector& wi, const Vector& wo) const {
 		if (Frame::cosTheta(wi) <= 0 || Frame::cosTheta(wo) <= 0) {
 			return Spectrum(0.0f);
@@ -76,7 +78,7 @@ public:
 		cart[4] = wo[1];
 		cart[5] = wo[2];
 
-			
+
 		/* Return the value of the BRDF from the function object */
 		if(!_data) {
 			vec x(_func->dimX());
@@ -94,7 +96,7 @@ public:
 		} else {
 			vec x(_data->dimX());
 			params::convert(&cart[0], params::CARTESIAN, _data->input_parametrization(), &x[0]);
-			
+
 			vec y = _data->value(x);
 			Spectrum res;
 			if(_data->dimY() == 3) {
@@ -174,7 +176,7 @@ public:
 	Float getRoughness(const Intersection &its, int component) const {
 		return std::numeric_limits<Float>::infinity();
 	}
-	
+
 	inline Vector reflect(const Vector &wi) const {
 		return Vector(-wi.x, -wi.y, wi.z);
 	}
