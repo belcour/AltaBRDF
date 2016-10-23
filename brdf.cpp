@@ -30,8 +30,7 @@ public:
 
 	AltaBRDF(const Properties& props) : BSDF(props), _data(NULL), _func(NULL) {
 		if(props.hasProperty("data-plugin")) {
-			_data = ptr<data>(plugins_manager::get_data(props.getString("data-plugin")));
-			_data->load(props.getString("filename"));
+			_data = plugins_manager::load_data(props.getString("filename"), props.getString("data-plugin"));
 		} else {
 			_func = ptr<function>(plugins_manager::load_function(props.getString("filename")));
 		}
@@ -81,11 +80,12 @@ public:
 
 		/* Return the value of the BRDF from the function object */
 		if(!_data) {
-			vec x(_func->dimX());
-			params::convert(&cart[0], params::CARTESIAN, _func->input_parametrization(), &x[0]);
+         parameters param = _func->parametrization();
+			vec x(param.dimX());
+			params::convert(&cart[0], params::CARTESIAN, param.input_parametrization(), &x[0]);
 			vec y = _func->value(x);
 			Spectrum res;
-			if(_func->dimY() == 3) {
+			if(param.dimY() == 3) {
 				res.fromLinearRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
 			} else {
 				res = Spectrum(std::max(y[0], 0.0));
@@ -94,12 +94,13 @@ public:
 
 		/* Treat the case of a BRDF from interpolated data */
 		} else {
-			vec x(_data->dimX());
-			params::convert(&cart[0], params::CARTESIAN, _data->input_parametrization(), &x[0]);
+         parameters param = _data->parametrization();
+			vec x(param.dimX());
+			params::convert(&cart[0], params::CARTESIAN, param.input_parametrization(), &x[0]);
 
 			vec y = _data->value(x);
 			Spectrum res;
-			if(_data->dimY() == 3) {
+			if(param.dimY() == 3) {
 				res.fromLinearRGB(std::max(y[0], 0.0), std::max(y[1], 0.0), std::max(y[2], 0.0));
 			} else {
 				res = Spectrum(std::max(y[0], 0.0));
