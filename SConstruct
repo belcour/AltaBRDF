@@ -23,7 +23,7 @@ env.AppendUnique(CPPDEFINES = 'SINGLE_PRECISION')
 env.AppendUnique(CPPDEFINES = 'SPECTRUM_SAMPLES=3')
 
 if sys.platform == 'posix' or sys.platform == 'linux2':
-	env.AppendUnique(CCFLAGS = ['-g'])
+	env.AppendUnique(CCFLAGS = ['-g','-std=gnu++11'])
 	env.AppendUnique(CPPPATH = [os.path.join(mitsubaPath, 'include')])
 	env.AppendUnique(CPPPATH = [os.path.join(altaPath, 'sources'), os.path.join(altaPath, 'external/build/include')])
 
@@ -32,7 +32,7 @@ if sys.platform == 'posix' or sys.platform == 'linux2':
 
 	libpath = os.path.join(mitsubaPath, 'dist')
 	env.AppendUnique(LIBPATH = [libpath])
-	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'sources/build')])
+	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'build/core')])
 	libs = [f for f in os.listdir(libpath) if f.endswith('.so')]
 	env.AppendUnique(LIBS = [libs, 'core'])
 	env.AppendUnique(RPATH = libpath)
@@ -52,7 +52,7 @@ elif sys.platform == 'darwin':
 
 	libpath = os.path.join(mitsubaPath, 'Mitsuba.app/Contents/Frameworks/')
 	env.AppendUnique(LIBPATH = [libpath])
-	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'sources/build')])
+	env.AppendUnique(LIBPATH = [os.path.join(altaPath, 'build/core')])
 	libs = [f for f in os.listdir(libpath) if f.endswith('.dylib')]
 	libs.remove('libboost_python26.dylib')
 	libs.remove('libboost_python33.dylib')
