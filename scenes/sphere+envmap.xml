@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene version="0.5.0">
+
+   <default name="plugin_type" value="data-plugin" />
+   <default name="plugin_name" value="data_merl" />
+   <default name="filename"    value="blue-metallic-paint.binary" />
+   <default name="envmap"      value="uffizi.exr" />
+
+	<integrator type="direct" />
+
+	<sensor type="thinlens">
+		<float name="apertureRadius" value="0.1"/>
+		<float name="focusDistance" value="3"/>
+		<float name="fov" value="38"/>
+
+		<transform name="toWorld">
+			<lookat target="0, 0, 0" origin="0, 3.2, 0" up="0, 0, 1"/>
+		</transform>
+
+		<sampler type="ldsampler">
+			<integer name="sampleCount" value="$spp"/>
+		</sampler>
+
+		<film type="ldrfilm">
+			<boolean name="banner" value="false"/>
+
+			<integer name="height" value="512"/>
+			<integer name="width" value="512"/>
+
+			<string name="pixelFormat" value="rgb"/>
+
+			<rfilter type="gaussian"/>
+		</film>
+	</sensor>
+	<shape type="sphere">
+		<float name="radius" value="1"/>
+      <bsdf type="alta_brdf">
+         <string name="filename"    value="$filename" />
+         <string name="$plugin_type" value="$plugin_name" />
+      </bsdf>
+	</shape>
+
+	<emitter type="envmap">
+      <string name="filename" value="$envmap" />
+		<transform name="toWorld">
+			<lookat target="0, 0, 0" origin="1, 0, 0" up="0, 0, 1"/>
+		</transform>
+      <float name="scale" value="2" />
+	</emitter>
+</scene>
+

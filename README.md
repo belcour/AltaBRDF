@@ -7,11 +7,14 @@ AltaBRDF
 
 ## Build
 
-To build this package, you can SCons or CMake. For example with scons:
+To build this package, you can SCons or CMake. For example, using CMake:
 
-    $ scons install
+    $ mkdir build
+    $ cd build
+    $ cmake -DEIGEN3_INCLUDE_DIR=/usr/include/eigen3 ..
+    $ make && make install
 
-The 'install' flag, will automatically move the resulting library to the Mitsuba plugin directory so that it is readily usable. Make sure that both Mitsuba and ALTA are available in the environment variables (you can do this by sourcing the setpath.sh or both softwares).
+The 'install' flag, will automatically move the resulting library to the Mitsuba plugin directory so that it is readily usable. Make sure that both Mitsuba and ALTA are available in the environment variables (you can do this by sourcing the `setpath.sh` or both softwares).
 
 ## Usage
 
@@ -21,6 +24,7 @@ Once this shared library is compiled and added to Mitsuba plugin set, you can us
        <string name="filename" value="PATH-TO-FILE" />
     </bsdf>
 
+We provide xml scene files examples in `scenes`.
 
 ## Example
 
